@@ -1,0 +1,40 @@
+services:
+  mongo:
+    image: mongo:8.0
+    container_name: final-capstone-mongo
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo-data:/data/db
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      PORT: 4000
+      MONGODB_URI: mongodb://mongo:27017/final-capstone
+      CLIENT_ORIGIN: http://localhost:5173
+    depends_on:
+      - mongo
+    ports:
+      - '4000:4000'
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    depends_on:
+      - api
+    ports:
+      - '4173:80'
+
+  static-page:
+    build:
+      context: .
+      dockerfile: apps/static-page/Dockerfile
+    ports:
+      - '8080:80'
+
+volumes:
+  mongo-data:

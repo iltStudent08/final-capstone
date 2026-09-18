@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: final-capstone-api
+  namespace: final-capstone
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: final-capstone-api
+  template:
+    metadata:
+      labels:
+        app: final-capstone-api
+    spec:
+      containers:
+        - name: api
+          image: final-capstone/api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4000
+          envFrom:
+            - configMapRef:
+                name: final-capstone-api-config
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 4000
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 4000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: final-capstone-api
+  namespace: final-capstone
+spec:
+  selector:
+    app: final-capstone-api
+  ports:
+    - port: 4000
+      targetPort: 4000
