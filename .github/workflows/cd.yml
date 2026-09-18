@@ -16,7 +16,7 @@ jobs:
     env:
       AWS_REGION: ${{ vars.AWS_REGION }}
       EKS_CLUSTER_NAME: ${{ vars.EKS_CLUSTER_NAME }}
-      K8S_NAMESPACE: ${{ vars.K8S_NAMESPACE || 'final-capstone' }}
+      K8S_NAMESPACE: final-capstone
       ECR_REPOSITORY_PREFIX: ${{ vars.ECR_REPOSITORY_PREFIX || 'final-capstone' }}
 
     steps:
