@@ -6,4 +6,3 @@ metadata:
 data:
   PORT: '4000'
   CLIENT_ORIGIN: http://final-capstone-web
-  MONGODB_URI: mongodb://final-capstone-mongodb:27017/final-capstone

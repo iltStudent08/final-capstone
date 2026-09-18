@@ -17,7 +17,7 @@ jobs:
       AWS_REGION: ${{ vars.AWS_REGION }}
       EKS_CLUSTER_NAME: ${{ vars.EKS_CLUSTER_NAME }}
       K8S_NAMESPACE: final-capstone
-      ECR_REPOSITORY_PREFIX: ${{ vars.ECR_REPOSITORY_PREFIX || 'final-capstone' }}
+      ECR_REPOSITORY_PREFIX: final-capstone
 
     steps:
       - name: Check out repository

@@ -26,19 +26,23 @@ Base project scaffold for a static welcome page, a React + TypeScript single-pag
    ```bash
    npm install
    ```
-2. Copy the API environment template if you want to override defaults:
+2. Start MongoDB locally before starting the API:
+   ```bash
+   docker compose up -d mongo
+   ```
+3. Copy the API environment template if you want to override defaults:
    ```bash
    cp apps/api/.env.example apps/api/.env
    ```
-3. Start the React app:
+4. Start the React app:
    ```bash
    npm run dev:web
    ```
-4. Start the API:
+5. Start the API:
    ```bash
    npm run dev:api
    ```
-5. Serve the static welcome page:
+6. Serve the static welcome page:
    ```bash
    npm run start:static
    ```
@@ -56,6 +60,7 @@ docker compose up --build
 Starter manifests live in `/k8s` and include:
 
 - namespace and shared API configuration
+- an example secret manifest for the MongoDB connection string
 - deployments and services for the static page, React SPA, and API
 - an ingress resource with AWS Load Balancer Controller annotations suitable for EKS
 

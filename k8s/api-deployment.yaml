@@ -22,6 +22,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: final-capstone-api-config
+            - secretRef:
+                name: final-capstone-secrets
           startupProbe:
             httpGet:
               path: /api/health
