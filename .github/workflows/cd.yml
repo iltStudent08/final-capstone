@@ -1,0 +1,96 @@
+name: CD
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  docker-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      EKS_CLUSTER_NAME: ${{ vars.EKS_CLUSTER_NAME }}
+      K8S_NAMESPACE: final-capstone
+      ECR_REPOSITORY_PREFIX: final-capstone
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push API image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./apps/api/Dockerfile
+          push: true
+          tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_PREFIX }}-api:${{ github.sha }}
+
+      - name: Build and push web image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./apps/web/Dockerfile
+          push: true
+          tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_PREFIX }}-web:${{ github.sha }}
+
+      - name: Build and push static page image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./apps/static-page/Dockerfile
+          push: true
+          tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_PREFIX }}-static-page:${{ github.sha }}
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --region "$AWS_REGION" --name "$EKS_CLUSTER_NAME"
+
+      - name: Create or update API secret
+        run: |
+          kubectl apply -f k8s/namespace.yaml
+          kubectl create secret generic final-capstone-secrets \
+            --from-literal=MONGODB_URI='${{ secrets.MONGODB_URI }}' \
+            --namespace "$K8S_NAMESPACE" \
+            --dry-run=client \
+            -o yaml | kubectl apply -f -
+
+      - name: Apply manifests and update images
+        run: |
+          API_IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_PREFIX }}-api:${{ github.sha }}"
+          WEB_IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_PREFIX }}-web:${{ github.sha }}"
+          STATIC_PAGE_IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_PREFIX }}-static-page:${{ github.sha }}"
+          RENDER_DIR="$(mktemp -d)"
+
+          cp k8s/*.yaml "$RENDER_DIR"/
+          sed -i "s|REPLACE_WITH_API_IMAGE|$API_IMAGE|g" "$RENDER_DIR/api-deployment.yaml"
+          sed -i "s|REPLACE_WITH_WEB_IMAGE|$WEB_IMAGE|g" "$RENDER_DIR/web-deployment.yaml"
+          sed -i "s|REPLACE_WITH_STATIC_PAGE_IMAGE|$STATIC_PAGE_IMAGE|g" "$RENDER_DIR/static-page-deployment.yaml"
+
+          kubectl apply -f k8s/namespace.yaml
+          kubectl apply -f "$RENDER_DIR/configmap.yaml"
+          kubectl apply -f "$RENDER_DIR/mongodb-deployment.yaml"
+          kubectl apply -f "$RENDER_DIR/api-deployment.yaml"
+          kubectl apply -f "$RENDER_DIR/web-deployment.yaml"
+          kubectl apply -f "$RENDER_DIR/static-page-deployment.yaml"
+          kubectl apply -f "$RENDER_DIR/ingress.yaml"
+          kubectl rollout status deployment/final-capstone-api -n "$K8S_NAMESPACE"
+          kubectl rollout status deployment/final-capstone-web -n "$K8S_NAMESPACE"
+          kubectl rollout status deployment/final-capstone-static-page -n "$K8S_NAMESPACE"

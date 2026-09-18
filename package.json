@@ -1,0 +1,21 @@
+{
+  "name": "final-capstone",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Base full-stack capstone scaffold with a static page, React SPA, and Express API.",
+  "workspaces": [
+    "apps/web",
+    "apps/api"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "dev:web": "npm run dev --workspace @final-capstone/web",
+    "dev:api": "npm run dev --workspace @final-capstone/api",
+    "start:static": "python3 -m http.server 8080 --directory apps/static-page"
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  }
+}

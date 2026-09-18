@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: final-capstone-static-page
+  namespace: final-capstone
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: final-capstone-static-page
+  template:
+    metadata:
+      labels:
+        app: final-capstone-static-page
+    spec:
+      containers:
+        - name: static-page
+          image: REPLACE_WITH_STATIC_PAGE_IMAGE
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: final-capstone-static-page
+  namespace: final-capstone
+spec:
+  selector:
+    app: final-capstone-static-page
+  ports:
+    - port: 80
+      targetPort: 80

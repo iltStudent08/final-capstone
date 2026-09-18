@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: final-capstone-api-config
+  namespace: final-capstone
+data:
+  PORT: '4000'
+  CLIENT_ORIGIN: https://replace-with-your-ingress-host.example.com
