@@ -13,7 +13,7 @@ export const createApp = () => {
     }),
   )
   app.use(express.json())
-  app.use('/api', rootRouter)
+  app.use(rootRouter)
 
   return app
 }
