@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: web
-          image: final-capstone/web:latest
+          image: REPLACE_WITH_WEB_IMAGE
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80

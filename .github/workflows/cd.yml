@@ -74,16 +74,23 @@ jobs:
 
       - name: Apply manifests and update images
         run: |
+          API_IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_PREFIX }}-api:${{ github.sha }}"
+          WEB_IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_PREFIX }}-web:${{ github.sha }}"
+          STATIC_PAGE_IMAGE="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_PREFIX }}-static-page:${{ github.sha }}"
+          RENDER_DIR="$(mktemp -d)"
+
+          cp k8s/*.yaml "$RENDER_DIR"/
+          sed -i "s|REPLACE_WITH_API_IMAGE|$API_IMAGE|g" "$RENDER_DIR/api-deployment.yaml"
+          sed -i "s|REPLACE_WITH_WEB_IMAGE|$WEB_IMAGE|g" "$RENDER_DIR/web-deployment.yaml"
+          sed -i "s|REPLACE_WITH_STATIC_PAGE_IMAGE|$STATIC_PAGE_IMAGE|g" "$RENDER_DIR/static-page-deployment.yaml"
+
           kubectl apply -f k8s/namespace.yaml
-          kubectl apply -f k8s/configmap.yaml
-          kubectl apply -f k8s/mongodb-deployment.yaml
-          kubectl apply -f k8s/api-deployment.yaml
-          kubectl apply -f k8s/web-deployment.yaml
-          kubectl apply -f k8s/static-page-deployment.yaml
-          kubectl apply -f k8s/ingress.yaml
-          kubectl set image deployment/final-capstone-api api=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_PREFIX }}-api:${{ github.sha }} -n "$K8S_NAMESPACE"
-          kubectl set image deployment/final-capstone-web web=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_PREFIX }}-web:${{ github.sha }} -n "$K8S_NAMESPACE"
-          kubectl set image deployment/final-capstone-static-page static-page=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_PREFIX }}-static-page:${{ github.sha }} -n "$K8S_NAMESPACE"
+          kubectl apply -f "$RENDER_DIR/configmap.yaml"
+          kubectl apply -f "$RENDER_DIR/mongodb-deployment.yaml"
+          kubectl apply -f "$RENDER_DIR/api-deployment.yaml"
+          kubectl apply -f "$RENDER_DIR/web-deployment.yaml"
+          kubectl apply -f "$RENDER_DIR/static-page-deployment.yaml"
+          kubectl apply -f "$RENDER_DIR/ingress.yaml"
           kubectl rollout status deployment/final-capstone-api -n "$K8S_NAMESPACE"
           kubectl rollout status deployment/final-capstone-web -n "$K8S_NAMESPACE"
           kubectl rollout status deployment/final-capstone-static-page -n "$K8S_NAMESPACE"
