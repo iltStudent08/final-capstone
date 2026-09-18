@@ -30,6 +30,9 @@ jobs:
       - name: Lint workspaces
         run: npm run lint
 
+      - name: Test workspaces
+        run: npm run test
+
       - name: Build workspaces
         run: npm run build
 
