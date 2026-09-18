@@ -64,6 +64,12 @@ Starter manifests live in `/k8s` and include:
 - deployments and services for the static page, React SPA, and API
 - an ingress resource with AWS Load Balancer Controller annotations suitable for EKS
 
+Before running the CD workflow against EKS, set these values for your environment:
+
+- `CLIENT_ORIGIN` in `k8s/configmap.yaml` to the public origin served by your ingress
+- `MONGODB_URI` as the `MONGODB_URI` GitHub Actions secret used by `.github/workflows/cd.yml`
+- `storageClassName` in `k8s/mongodb-deployment.yaml` if your EKS cluster does not use `gp3`
+
 ## CI/CD
 
 GitHub Actions workflows are included for:

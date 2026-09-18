@@ -16,4 +16,4 @@ COPY apps/api/package.json apps/api/package.json
 RUN npm ci --omit=dev --workspace @final-capstone/api
 COPY --from=build /app/apps/api/dist apps/api/dist
 EXPOSE 4000
-CMD ["npm", "run", "start", "--workspace", "@final-capstone/api"]
+CMD ["node", "apps/api/dist/server.js"]

@@ -63,9 +63,17 @@ jobs:
       - name: Update kubeconfig
         run: aws eks update-kubeconfig --region "$AWS_REGION" --name "$EKS_CLUSTER_NAME"
 
-      - name: Apply manifests and update images
+      - name: Create or update API secret
         run: |
           kubectl apply -f k8s/namespace.yaml
+          kubectl create secret generic final-capstone-secrets \
+            --from-literal=MONGODB_URI='${{ secrets.MONGODB_URI }}' \
+            --namespace "$K8S_NAMESPACE" \
+            --dry-run=client \
+            -o yaml | kubectl apply -f -
+
+      - name: Apply manifests and update images
+        run: |
           kubectl apply -f k8s/configmap.yaml
           kubectl apply -f k8s/mongodb-deployment.yaml
           kubectl apply -f k8s/api-deployment.yaml

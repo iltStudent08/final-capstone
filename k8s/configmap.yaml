@@ -5,4 +5,4 @@ metadata:
   namespace: final-capstone
 data:
   PORT: '4000'
-  CLIENT_ORIGIN: http://final-capstone-web
+  CLIENT_ORIGIN: https://replace-with-your-ingress-host.example.com
