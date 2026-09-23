@@ -25,5 +25,6 @@ const toNumber = (value: string | undefined, fallback: number) => {
 export const env = {
   port: toNumber(process.env.PORT, 4000),
   mongodbUri: process.env.MONGODB_URI ?? 'mongodb://localhost:27017/final-capstone',
-  clientOrigin: process.env.CLIENT_ORIGIN ?? 'http://localhost:5173',
+  clientOrigin: process.env.CLIENT_ORIGIN ?? 'http://localhost:3000',
+  jwtSecret: process.env.JWT_SECRET ?? 'local-development-secret-change-me',
 }

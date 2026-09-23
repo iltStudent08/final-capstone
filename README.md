@@ -1,78 +1,83 @@
-# final-capstone
+# Taskflow
 
-Base project scaffold for a static welcome page, a React + TypeScript single-page application, and an Express + TypeScript REST API backed by MongoDB.
+Taskflow is a full-stack project task tracker. Teams can register, create projects, manage tasks, update task status, and review dashboard statistics.
 
-## Project structure
+## Features
+
+- Custom HTML/CSS landing page at `/`
+- React + TypeScript application at `/app/`
+- JWT registration, login, logout, and protected routes
+- Project and Task CRUD backed by MongoDB and Mongoose
+- Project/User and Task/Project/User references with ownership checks
+- Dashboard counts, status aggregations, and recent tasks
+- Docker Compose for local services
+- Kubernetes manifests and GitHub Actions deployment scaffolding for EKS
+
+## Project Structure
 
 ```text
-.
-├── apps
-│   ├── api
-│   │   ├── src
-│   │   └── tests
-│   ├── static-page
-│   │   └── tests
-│   └── web
-│       ├── src
-│       └── tests
-├── .github/workflows
-├── docker-compose.yml
-└── k8s
+apps/
+  api/                 Express + TypeScript + Mongoose service
+    src/models/        User, Project, and Task schemas
+    src/routes/        auth, projects, tasks, and dashboard routes
+  web/                 React + TypeScript + Vite client
+    public/             root landing page served by Nginx
+k8s/                   EKS manifests
+.github/workflows/     CI and CD workflows
+docker-compose.yml     local MongoDB, API, and web stack
+ARCHITECTURE.md        system and deployment overview
 ```
 
-## Local setup
+## Local Development
 
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
-2. Start MongoDB locally before starting the API:
-   ```bash
-   docker compose up -d mongo
-   ```
-3. Copy the API environment template if you want to override defaults:
-   ```bash
-   cp apps/api/.env.example apps/api/.env
-   ```
-4. Start the React app:
-   ```bash
-   npm run dev:web
-   ```
-5. Start the API:
-   ```bash
-   npm run dev:api
-   ```
-6. Serve the static welcome page:
-   ```bash
-   npm run start:static
-   ```
-
-## Containers
-
-Build and run the local stack with Docker Compose:
+Prerequisites: Node.js 22+, npm, and Docker Desktop.
 
 ```bash
+npm ci
+cp apps/api/.env.example apps/api/.env
 docker compose up --build
 ```
 
-## Kubernetes / EKS
+Open `http://localhost:3000/` for the landing page and `http://localhost:3000/app/` for the application. The API is available through `http://localhost:3000/api`; its health endpoint is `GET /api/health`.
 
-Starter manifests live in `/k8s` and include:
+For separate development processes, start MongoDB with `docker compose up -d mongo`, then run `npm run dev:api` and `npm run dev:web`. The Vite development server serves the React client; the production path contract is `/app/`.
 
-- namespace and shared API configuration
-- an example secret manifest for the MongoDB connection string
-- deployments and services for the static page, React SPA, and API
-- an ingress resource with AWS Load Balancer Controller annotations suitable for EKS
+## API Routes
 
-Before running the CD workflow against EKS, set these values for your environment:
+| Method | Route | Purpose | Auth |
+| --- | --- | --- | --- |
+| POST | `/api/auth/register` | Create a user and return a JWT | No |
+| POST | `/api/auth/login` | Authenticate and return a JWT | No |
+| GET | `/api/projects` | List projects | Yes |
+| POST | `/api/projects` | Create a project | Yes |
+| GET/PUT/DELETE | `/api/projects/:id` | Read, update, or delete a project | Yes |
+| GET | `/api/tasks` | List tasks, optionally filtered by project | Yes |
+| POST | `/api/tasks` | Create a task | Yes |
+| GET/PUT/DELETE | `/api/tasks/:id` | Read, update, or delete a task | Yes |
+| GET | `/api/dashboard` | Return aggregate project/task statistics | Yes |
 
-- `CLIENT_ORIGIN` in `k8s/configmap.yaml` to the public origin served by your ingress
-- `MONGODB_URI` as the `MONGODB_URI` GitHub Actions secret used by `.github/workflows/cd.yml`
-- `storageClassName` in `k8s/mongodb-deployment.yaml` if your EKS cluster does not use `gp3`
+Write operations are protected by JWT middleware. Project and task mutations enforce ownership unless the authenticated user has the `admin` role. Errors use JSON responses with an `error` field.
 
-## CI/CD
+## Quality Checks
 
-GitHub Actions workflows are included for:
+```bash
+npm run lint
+npm test
+npm run build
+```
 
-- CI validation on pushes and pull requests
-- container build/publish plus EKS deployment scaffolding
+## AWS / EKS
+
+The deployment workflow builds API and web images, pushes them to ECR, creates the Kubernetes secret, applies the manifests, and waits for API and web rollouts. Configure these GitHub values before enabling CD:
+
+- `AWS_REGION` and `EKS_CLUSTER_NAME` repository variables
+- `AWS_ROLE_TO_ASSUME` repository secret for GitHub OIDC
+- `MONGODB_URI` and `JWT_SECRET` repository secrets
+- `CLIENT_ORIGIN` in `k8s/configmap.yaml`
+- `storageClassName` in `k8s/mongodb-deployment.yaml` for the target cluster
+
+The ALB ingress routes `/api` to the API service and all other traffic to the web service. Configure an ACM certificate and HTTPS listener before exposing production traffic.
+
+## Team
+
+Add team member names, responsibilities, repository URL, and the live EKS URL here before submission.
