@@ -1,7 +1,6 @@
 services:
   mongo:
-    image: mongo:8.0
-    container_name: final-capstone-mongo
+    image: mongo:7
     ports:
       - '27017:27017'
     volumes:
@@ -14,13 +13,14 @@ services:
     environment:
       PORT: 4000
       MONGODB_URI: mongodb://mongo:27017/final-capstone
+      JWT_SECRET: dev-secret-change-in-production
       CLIENT_ORIGIN: http://localhost:3000
     depends_on:
       - mongo
     ports:
       - '4000:4000'
 
-  web:
+  client:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
