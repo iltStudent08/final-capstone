@@ -50,3 +50,65 @@ test('GET /api returns starter metadata', async () => {
     await once(server, 'close')
   }
 })
+
+test('protected project routes reject requests without a token', async () => {
+  const { server, baseUrl } = await listen()
+
+  try {
+    const response = await fetch(`${baseUrl}/api/projects`)
+    assert.equal(response.status, 401)
+    assert.deepEqual(await response.json(), { error: 'Authentication required' })
+  } finally {
+    server.close()
+    await once(server, 'close')
+  }
+})
+
+test('protected dashboard route rejects an invalid token', async () => {
+  const { server, baseUrl } = await listen()
+
+  try {
+    const response = await fetch(`${baseUrl}/api/dashboard`, {
+      headers: { authorization: 'Bearer invalid-token' },
+    })
+    assert.equal(response.status, 401)
+    assert.deepEqual(await response.json(), { error: 'Invalid or expired authentication token' })
+  } finally {
+    server.close()
+    await once(server, 'close')
+  }
+})
+
+test('registration validates required fields before database access', async () => {
+  const { server, baseUrl } = await listen()
+
+  try {
+    const response = await fetch(`${baseUrl}/api/auth/register`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ email: 'missing-name@example.com', password: 'password123' }),
+    })
+    assert.equal(response.status, 400)
+    assert.deepEqual(await response.json(), { error: 'Missing required fields: name' })
+  } finally {
+    server.close()
+    await once(server, 'close')
+  }
+})
+
+test('login validates required fields before database access', async () => {
+  const { server, baseUrl } = await listen()
+
+  try {
+    const response = await fetch(`${baseUrl}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ email: 'missing-password@example.com' }),
+    })
+    assert.equal(response.status, 400)
+    assert.deepEqual(await response.json(), { error: 'Missing required fields: password' })
+  } finally {
+    server.close()
+    await once(server, 'close')
+  }
+})

@@ -18,13 +18,6 @@ spec:
                 name: final-capstone-api
                 port:
                   number: 4000
-          - path: /welcome
-            pathType: Prefix
-            backend:
-              service:
-                name: final-capstone-static-page
-                port:
-                  number: 80
           - path: /
             pathType: Prefix
             backend:

@@ -14,7 +14,7 @@ services:
     environment:
       PORT: 4000
       MONGODB_URI: mongodb://mongo:27017/final-capstone
-      CLIENT_ORIGIN: http://localhost:5173
+      CLIENT_ORIGIN: http://localhost:3000
     depends_on:
       - mongo
     ports:
@@ -27,14 +27,7 @@ services:
     depends_on:
       - api
     ports:
-      - '4173:80'
-
-  static-page:
-    build:
-      context: .
-      dockerfile: apps/static-page/Dockerfile
-    ports:
-      - '8080:80'
+      - '3000:80'
 
 volumes:
   mongo-data:
