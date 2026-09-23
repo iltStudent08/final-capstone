@@ -20,7 +20,7 @@ export function DashboardPage() {
       <header className="page-header"><div><p className="eyebrow">Workspace overview</p><h1>Good work starts with a clear next step.</h1></div></header>
       <section className="metric-grid" aria-label="Project statistics">
         <article className="metric-card"><span>Projects</span><strong>{dashboard.projectCount}</strong><small>Across your workspace</small></article>
-        <article className="metric-card metric-card-accent"><span>Tasks</span><strong>{dashboard.taskCount}</strong><small>Total work items</small></article>
+        <article className="metric-card"><span>Tasks</span><strong>{dashboard.taskCount}</strong><small>Total work items</small></article>
         <article className="metric-card"><span>Open tasks</span><strong>{dashboard.tasksByStatus.filter((item) => item._id !== 'done').reduce((total, item) => total + item.count, 0)}</strong><small>Still in motion</small></article>
       </section>
       <section className="dashboard-grid">
