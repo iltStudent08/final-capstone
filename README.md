@@ -30,7 +30,7 @@ ARCHITECTURE.md        system and deployment overview
 
 ## Local Development
 
-Prerequisites: Node.js 22+, npm, and Docker Desktop.
+Prerequisites: Node.js 20, npm, and Docker Desktop.
 
 ```bash
 npm ci
@@ -78,6 +78,10 @@ The deployment workflow builds API and web images, pushes them to ECR, creates t
 
 The ALB ingress routes `/api` to the API service and all other traffic to the web service. Configure an ACM certificate and HTTPS listener before exposing production traffic.
 
+Live application: [http://a794b709ac78d482196544e09b62ec7c-237943726.us-east-1.elb.amazonaws.com/](http://a794b709ac78d482196544e09b62ec7c-237943726.us-east-1.elb.amazonaws.com/)
+
 ## Team
 
-Add team member names, responsibilities, repository URL, and the live EKS URL here before submission.
+Members:
+Kris Penn
+Suyash Tiwari
