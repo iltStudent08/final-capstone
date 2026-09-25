@@ -83,5 +83,4 @@ Live application: [http://a794b709ac78d482196544e09b62ec7c-237943726.us-east-1.e
 ## Team
 
 Members:
-Kris Penn
-Suyash Tiwari
+Kris Penn & Suyash Tiwari
