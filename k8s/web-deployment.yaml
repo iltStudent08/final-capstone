@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
         - name: web
-          image: REPLACE_WITH_WEB_IMAGE
-          imagePullPolicy: IfNotPresent
+          image: 116981801353.dkr.ecr.us-east-1.amazonaws.com/capstone-client:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
           startupProbe:
@@ -44,6 +44,7 @@ metadata:
   name: final-capstone-web
   namespace: final-capstone
 spec:
+  type: LoadBalancer
   selector:
     app: final-capstone-web
   ports:

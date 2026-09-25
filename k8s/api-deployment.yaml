@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
         - name: api
-          image: REPLACE_WITH_API_IMAGE
-          imagePullPolicy: IfNotPresent
+          image: 116981801353.dkr.ecr.us-east-1.amazonaws.com/capstone-api:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 4000
           envFrom:
