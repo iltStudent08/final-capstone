@@ -2,8 +2,12 @@ import assert from 'node:assert/strict'
 import { once } from 'node:events'
 import { createServer } from 'node:http'
 import test from 'node:test'
+import jwt from 'jsonwebtoken'
 
 import { createApp } from '../../src/app'
+import { env } from '../../src/config/env'
+
+const authToken = jwt.sign({ role: 'member' }, env.jwtSecret, { subject: 'user-123' })
 
 const listen = async () => {
   const server = createServer(createApp())
@@ -107,6 +111,73 @@ test('login validates required fields before database access', async () => {
     })
     assert.equal(response.status, 400)
     assert.deepEqual(await response.json(), { error: 'Missing required fields: password' })
+  } finally {
+    server.close()
+    await once(server, 'close')
+  }
+})
+
+test('registration rejects whitespace-only required fields', async () => {
+  const { server, baseUrl } = await listen()
+
+  try {
+    const response = await fetch(`${baseUrl}/api/auth/register`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name: '  ', email: 'valid@example.com', password: 'password123' }),
+    })
+    assert.equal(response.status, 400)
+    assert.deepEqual(await response.json(), { error: 'Missing required fields: name' })
+  } finally {
+    server.close()
+    await once(server, 'close')
+  }
+})
+
+test('project detail rejects an invalid project id', async () => {
+  const { server, baseUrl } = await listen()
+
+  try {
+    const response = await fetch(`${baseUrl}/api/projects/not-an-object-id`, {
+      headers: { authorization: `Bearer ${authToken}` },
+    })
+    assert.equal(response.status, 400)
+    assert.deepEqual(await response.json(), { error: 'Invalid project id' })
+  } finally {
+    server.close()
+    await once(server, 'close')
+  }
+})
+
+test('task detail rejects an invalid task id', async () => {
+  const { server, baseUrl } = await listen()
+
+  try {
+    const response = await fetch(`${baseUrl}/api/tasks/not-an-object-id`, {
+      headers: { authorization: `Bearer ${authToken}` },
+    })
+    assert.equal(response.status, 400)
+    assert.deepEqual(await response.json(), { error: 'Invalid task id' })
+  } finally {
+    server.close()
+    await once(server, 'close')
+  }
+})
+
+test('task creation rejects an invalid project reference', async () => {
+  const { server, baseUrl } = await listen()
+
+  try {
+    const response = await fetch(`${baseUrl}/api/tasks`, {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${authToken}`,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ title: 'Task without a project', project: 'not-an-object-id' }),
+    })
+    assert.equal(response.status, 400)
+    assert.deepEqual(await response.json(), { error: 'A valid project is required' })
   } finally {
     server.close()
     await once(server, 'close')
